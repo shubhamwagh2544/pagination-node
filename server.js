@@ -25,13 +25,29 @@ const users = [
 ]
 
 app.get('/', (req, res) => {
-    const page = req.query.page
-    const limit = req.query.limit
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
 
-    const startIndex = (page - 1) * limit
+    const startIndex = (page - 1) * limit``
     const endIndex = page * limit
 
-    const result = users.slice(startIndex, endIndex)
+    const result = {}
+
+    if (startIndex > 0) {
+        result.previous = {
+            page: page - 1,
+            limit: limit
+        }
+    }
+
+    if (endIndex < users.length) {
+        result.next = {
+            page: page + 1,
+            limit: limit
+        }
+    }
+
+    result.result = users.slice(startIndex, endIndex)
 
     res.status(200).json(result)
 })
