@@ -1,7 +1,7 @@
 export default function paginationResult(model) {
-    return (req, res, next) => {
-        const page = Number(req.query.page)
-        const limit = Number(req.query.limit)
+    return async (req, res, next) => {
+        const page = Number(req.query.page) || 1
+        const limit = Number(req.query.limit) || 10
 
         const startIndex = (page - 1) * limit
         const endIndex = page * limit
@@ -15,16 +15,27 @@ export default function paginationResult(model) {
             }
         }
 
-        if (endIndex < model.length) {
-            result.next = {
-                page: page + 1,
-                limit: limit
+        try {
+            const count = await model.countDocuments().exec()
+            if (endIndex < count) {
+                result.next = {
+                    page: page + 1,
+                    limit: limit
+                }
             }
+
+            // result.result = model.slice(startIndex, endIndex)        // for static data
+
+            result.result = await model.find().sort({ id: 1 }).limit(limit).skip(startIndex).exec()
+            res.paginatedResults = result
+            next()
+        }
+        catch (err) {
+            console.log('err', err)
+            return res.status(500).json({
+                message: err.message
+            })
         }
 
-        result.result = model.slice(startIndex, endIndex)
-
-        res.paginatedResults = result
-        next()
     }
 }
