@@ -36,6 +36,8 @@ wss.on('connection', function (ws) {
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 ws.send(message, { binary: false })
+                // how to send JSON data
+                // ws.send(JSON.stringify({name: 'shubham', age: 25}))
             }
         })
     })
